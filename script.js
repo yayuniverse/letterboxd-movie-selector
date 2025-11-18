@@ -12,6 +12,7 @@ const loadButton = document.getElementById('loadButton');
 const pickButton = document.getElementById('pickButton');
 const statusText = document.getElementById('statusText');
 const currentSelection = document.getElementById('currentSelection');
+const letterboxdLink = document.getElementById('letterboxdLink');
 const historyList = document.getElementById('historyList');
 
 // Initialize on page load
@@ -28,7 +29,7 @@ function init() {
                 Array.isArray(state.allMovies) &&
                 Array.isArray(state.remainingMovies) &&
                 Array.isArray(state.pickedHistory) &&
-                state.allMovies.every(item => typeof item === 'string')) {
+                state.allMovies.every(item => typeof item === 'object' && item.name)) {
 
                 if (state.allMovies.length > 0) {
                     // Restore state
@@ -42,7 +43,7 @@ function init() {
 
                     // Show most recent selection if any
                     if (pickedHistory.length > 0) {
-                        currentSelection.textContent = pickedHistory[pickedHistory.length - 1];
+                        displayCurrentMovie(pickedHistory[pickedHistory.length - 1]);
                     }
 
                     renderHistory();
@@ -90,32 +91,42 @@ function loadCSV() {
         skipEmptyLines: true,
         complete: function(results) {
             try {
-                // Check if title column exists
-                if (results.data.length === 0 || !results.data[0].hasOwnProperty('title')) {
-                    statusText.textContent = 'No valid titles found in CSV. Make sure there is a "title" column.';
+                // Check if Name column exists
+                if (results.data.length === 0 || !results.data[0].hasOwnProperty('Name')) {
+                    statusText.textContent = 'No valid movies found in CSV. Make sure there is a "Name" column.';
                     pickButton.disabled = true;
                     return;
                 }
 
-                // Extract titles
-                const titles = results.data
-                    .map(row => row.title ? row.title.trim() : '')
-                    .filter(title => title.length > 0);
+                // Extract movie data
+                const movies = results.data
+                    .map(row => {
+                        const name = row.Name ? row.Name.trim() : '';
+                        if (!name) return null;
 
-                if (titles.length === 0) {
-                    statusText.textContent = 'No valid titles found in CSV';
+                        return {
+                            name: name,
+                            year: row.Year ? row.Year.trim() : '',
+                            letterboxdUri: row['Letterboxd URI'] ? row['Letterboxd URI'].trim() : ''
+                        };
+                    })
+                    .filter(movie => movie !== null);
+
+                if (movies.length === 0) {
+                    statusText.textContent = 'No valid movies found in CSV';
                     pickButton.disabled = true;
                     return;
                 }
 
                 // Update state
-                allMovies = titles;
+                allMovies = movies;
                 remainingMovies = [...allMovies];
                 pickedHistory = [];
 
                 // Update UI
-                statusText.textContent = `Loaded ${titles.length} movies from ${file.name}`;
+                statusText.textContent = `Loaded ${movies.length} movies from ${file.name}`;
                 currentSelection.textContent = '';
+                letterboxdLink.style.display = 'none';
                 historyList.innerHTML = '';
                 pickButton.disabled = false;
 
@@ -147,18 +158,35 @@ function pickRandomMovie() {
 
     // Select random movie
     const index = Math.floor(Math.random() * remainingMovies.length);
-    const selectedTitle = remainingMovies[index];
+    const selectedMovie = remainingMovies[index];
 
     // Update state
     remainingMovies.splice(index, 1);
-    pickedHistory.push(selectedTitle);
+    pickedHistory.push(selectedMovie);
 
     // Update UI
-    currentSelection.textContent = selectedTitle;
+    displayCurrentMovie(selectedMovie);
     renderHistory();
 
     // Save to localStorage
     saveState();
+}
+
+// Display current movie with name, year, and Letterboxd link
+function displayCurrentMovie(movie) {
+    let displayText = movie.name;
+    if (movie.year) {
+        displayText += ` (${movie.year})`;
+    }
+    currentSelection.textContent = displayText;
+
+    // Show or hide Letterboxd link
+    if (movie.letterboxdUri) {
+        letterboxdLink.href = movie.letterboxdUri;
+        letterboxdLink.style.display = 'inline-block';
+    } else {
+        letterboxdLink.style.display = 'none';
+    }
 }
 
 // Render history list
@@ -166,9 +194,13 @@ function renderHistory() {
     historyList.innerHTML = '';
 
     // Show history from oldest to newest
-    pickedHistory.forEach(title => {
+    pickedHistory.forEach(movie => {
         const div = document.createElement('div');
-        div.textContent = title;
+        let displayText = movie.name;
+        if (movie.year) {
+            displayText += ` (${movie.year})`;
+        }
+        div.textContent = displayText;
         historyList.appendChild(div);
     });
 }
