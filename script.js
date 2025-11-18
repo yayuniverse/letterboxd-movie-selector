@@ -1,7 +1,6 @@
 // State variables
 let allMovies = [];
 let remainingMovies = [];
-let pickedHistory = [];
 
 // LocalStorage key
 const STORAGE_KEY = 'randomMoviePickerState';
@@ -13,7 +12,6 @@ const pickButton = document.getElementById('pickButton');
 const statusText = document.getElementById('statusText');
 const currentSelection = document.getElementById('currentSelection');
 const letterboxdLink = document.getElementById('letterboxdLink');
-const historyList = document.getElementById('historyList');
 
 // Initialize on page load
 function init() {
@@ -28,25 +26,17 @@ function init() {
             if (state &&
                 Array.isArray(state.allMovies) &&
                 Array.isArray(state.remainingMovies) &&
-                Array.isArray(state.pickedHistory) &&
                 state.allMovies.every(item => typeof item === 'object' && item.name)) {
 
                 if (state.allMovies.length > 0) {
                     // Restore state
                     allMovies = state.allMovies;
                     remainingMovies = state.remainingMovies;
-                    pickedHistory = state.pickedHistory;
 
                     // Update UI
                     pickButton.disabled = false;
                     statusText.textContent = `Loaded ${allMovies.length} movies from previous session.`;
 
-                    // Show most recent selection if any
-                    if (pickedHistory.length > 0) {
-                        displayCurrentMovie(pickedHistory[pickedHistory.length - 1]);
-                    }
-
-                    renderHistory();
                     return;
                 }
             }
@@ -62,7 +52,6 @@ function init() {
     // Default state
     allMovies = [];
     remainingMovies = [];
-    pickedHistory = [];
     pickButton.disabled = true;
     statusText.textContent = 'No watchlist loaded';
 }
@@ -71,8 +60,7 @@ function init() {
 function saveState() {
     const state = {
         allMovies,
-        remainingMovies,
-        pickedHistory
+        remainingMovies
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
@@ -121,13 +109,11 @@ function loadCSV() {
                 // Update state
                 allMovies = movies;
                 remainingMovies = [...allMovies];
-                pickedHistory = [];
 
                 // Update UI
                 statusText.textContent = `Loaded ${movies.length} movies from ${file.name}`;
                 currentSelection.textContent = '';
                 letterboxdLink.style.display = 'none';
-                historyList.innerHTML = '';
                 pickButton.disabled = false;
 
                 // Save to localStorage
@@ -152,8 +138,6 @@ function pickRandomMovie() {
     // Reset if all movies have been picked
     if (remainingMovies.length === 0) {
         remainingMovies = [...allMovies];
-        pickedHistory = [];
-        historyList.innerHTML = '';
     }
 
     // Select random movie
@@ -162,11 +146,9 @@ function pickRandomMovie() {
 
     // Update state
     remainingMovies.splice(index, 1);
-    pickedHistory.push(selectedMovie);
 
     // Update UI
     displayCurrentMovie(selectedMovie);
-    renderHistory();
 
     // Save to localStorage
     saveState();
@@ -187,22 +169,6 @@ function displayCurrentMovie(movie) {
     } else {
         letterboxdLink.style.display = 'none';
     }
-}
-
-// Render history list
-function renderHistory() {
-    historyList.innerHTML = '';
-
-    // Show history from oldest to newest
-    pickedHistory.forEach(movie => {
-        const div = document.createElement('div');
-        let displayText = movie.name;
-        if (movie.year) {
-            displayText += ` (${movie.year})`;
-        }
-        div.textContent = displayText;
-        historyList.appendChild(div);
-    });
 }
 
 // Event listeners
