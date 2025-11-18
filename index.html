@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Movie Picker</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Papa Parse CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Random Movie Picker</h1>
+        </header>
+
+        <section class="upload-section">
+            <h2>Upload Watchlist</h2>
+            <div class="upload-controls">
+                <input type="file" id="csvFileInput" accept=".csv">
+                <button id="loadButton">Load watchlist</button>
+            </div>
+            <div id="statusText" class="status-text">No watchlist loaded</div>
+        </section>
+
+        <section class="picker-section">
+            <h2>Movie Selection</h2>
+            <button id="pickButton" disabled>Pick random movie</button>
+            <div id="currentSelection" class="current-selection"></div>
+
+            <div class="history-section">
+                <h3>Previously Picked (This Cycle)</h3>
+                <div id="historyList" class="history-list"></div>
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
