@@ -106,13 +106,30 @@ button:disabled {
     padding: 20px;
     background-color: #e7f3ff;
     border-radius: 6px;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
     font-size: 1.5em;
     font-weight: bold;
     color: #007bff;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.letterboxd-link {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #00c030;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 1em;
+    font-weight: 500;
+    transition: background-color 0.3s;
+    margin-bottom: 30px;
+}
+
+.letterboxd-link:hover {
+    background-color: #00a028;
 }
 
 .history-section {
