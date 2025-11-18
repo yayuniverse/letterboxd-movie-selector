@@ -13,6 +13,7 @@ const cfgParts = ['YWNhMjE1ODUx', 'MTkwMGY1ZTQ5', 'MGI0MzIxMjkz', 'ZDA0MGI='];
 const cfgJoined = cfgParts.join('');
 const cfgDecoded = atob(cfgJoined);
 const SHOW_MOVIE_POSTERS = false;
+const ENABLE_FILE_UPLOAD = false;
 
 // DOM elements
 const csvFileInput = document.getElementById('csvFileInput');
@@ -366,7 +367,15 @@ async function fetchPosterImage(movie) {
 }
 
 // Event listeners
-loadButton.addEventListener('click', loadCSV);
+if (ENABLE_FILE_UPLOAD) {
+    loadButton.addEventListener('click', loadCSV);
+} else {
+    // Hide the upload section when file upload is disabled
+    const uploadSection = document.querySelector('.upload-section');
+    if (uploadSection) {
+        uploadSection.style.display = 'none';
+    }
+}
 pickButton.addEventListener('click', pickRandomItem);
 
 // Initialize
