@@ -14,7 +14,18 @@ const currentSelection = document.getElementById('currentSelection');
 const letterboxdLink = document.getElementById('letterboxdLink');
 
 // Initialize on page load
-function init() {
+async function init() {
+    // If running over http/https, try to auto-load CSV from repo
+    if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+        try {
+            await loadCSVFromURL('./watchlist.csv');
+            return; // Successfully loaded CSV from repo
+        } catch (error) {
+            // Failed to load CSV from repo, fall back to localStorage or default state
+            console.log('Could not auto-load watchlist.csv, falling back to localStorage');
+        }
+    }
+
     // Try to restore state from localStorage
     try {
         const storedData = localStorage.getItem(STORAGE_KEY);
@@ -65,7 +76,77 @@ function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
-// Load CSV file
+// Load CSV from URL (for auto-loading from repo)
+async function loadCSVFromURL(url) {
+    return new Promise((resolve, reject) => {
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(csvText => {
+                Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        try {
+                            // Check if Name column exists
+                            if (results.data.length === 0 || !results.data[0].hasOwnProperty('Name')) {
+                                reject(new Error('No valid movies found in CSV. Make sure there is a "Name" column.'));
+                                return;
+                            }
+
+                            // Extract movie data (same logic as manual upload)
+                            const movies = results.data
+                                .map(row => {
+                                    const name = row.Name ? row.Name.trim() : '';
+                                    if (!name) return null;
+
+                                    return {
+                                        name: name,
+                                        year: row.Year ? row.Year.trim() : '',
+                                        letterboxdUri: row['Letterboxd URI'] ? row['Letterboxd URI'].trim() : ''
+                                    };
+                                })
+                                .filter(movie => movie !== null);
+
+                            if (movies.length === 0) {
+                                reject(new Error('No valid movies found in CSV'));
+                                return;
+                            }
+
+                            // Update state
+                            allMovies = movies;
+                            remainingMovies = [...allMovies];
+
+                            // Update UI
+                            statusText.textContent = `Loaded ${movies.length} movies from watchlist`;
+                            currentSelection.textContent = '';
+                            letterboxdLink.style.display = 'none';
+                            pickButton.disabled = false;
+
+                            // Save to localStorage
+                            saveState();
+
+                            resolve();
+                        } catch (error) {
+                            reject(new Error('Failed to parse CSV. Please check the file format.'));
+                        }
+                    },
+                    error: function(error) {
+                        reject(new Error('Failed to parse CSV. Please check the file format.'));
+                    }
+                });
+            })
+            .catch(error => {
+                reject(error);
+            });
+    });
+}
+
+// Load CSV file (manual upload)
 function loadCSV() {
     const file = csvFileInput.files[0];
 
