@@ -24,11 +24,16 @@
         </section>
 
         <section class="picker-section">
-            <h2>Movie Selection</h2>
-            <button id="pickButton" disabled>Pick random movie</button>
+            <h2>Selection</h2>
+            <div class="mode-toggle">
+                <label><input type="radio" name="pickMode" value="movies" checked> Movies</label>
+                <label><input type="radio" name="pickMode" value="reading"> Reading</label>
+                <label><input type="radio" name="pickMode" value="both"> Surprise Me</label>
+            </div>
+            <button id="pickButton" disabled>Pick random item</button>
             <div id="currentSelection" class="current-selection"></div>
             <img id="moviePoster" class="movie-poster" alt="Movie poster" style="display: none;">
-            <a id="letterboxdLink" href="#" target="_blank" rel="noopener noreferrer" class="letterboxd-link" style="display: none;">Open on Letterboxd</a>
+            <a id="actionLink" href="#" target="_blank" rel="noopener noreferrer" class="letterboxd-link" style="display: none;"></a>
         </section>
     </div>
 
