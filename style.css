@@ -131,31 +131,3 @@ button:disabled {
 .letterboxd-link:hover {
     background-color: #00a028;
 }
-
-.history-section {
-    margin-top: 30px;
-    text-align: left;
-}
-
-.history-list {
-    max-height: 300px;
-    overflow-y: auto;
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-}
-
-.history-list:empty::before {
-    content: "No movies picked yet";
-    color: #999;
-    font-style: italic;
-}
-
-.history-list div {
-    padding: 8px;
-    margin-bottom: 5px;
-    background-color: white;
-    border-left: 3px solid #007bff;
-    border-radius: 3px;
-}
